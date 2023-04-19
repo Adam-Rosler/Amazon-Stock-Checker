@@ -1,6 +1,9 @@
 
-from bs4 import BeautifulSoup
+from bs4 import BeautifulSoup, SoupStrainer
 import requests
+import re
+
+
 
 headers = headers = {
                 'authority': 'www.amazon.com',
@@ -28,19 +31,57 @@ headers = headers = {
 
 
 
+storeId = "AZC5JQHYF9AQY"
+currentPage = 1
+while True:
+    url = "https://www.amazon.com/s?i=merchant-items&me=" + storeId + "&page=" + str(currentPage)
+    response = requests.get(url, headers=headers)
+    # Parse the HTML content of the page
+    soup = BeautifulSoup(response.content, "html.parser")
+    element = soup.findAll('div', {'data-component-type': 's-search-result'})
 
+    itemsList = []
+    for item in element:
+        title = item.find(class_="a-size-medium a-color-base a-text-normal").text
+        price = item.find(class_ = "a-offscreen").text
+        stock = item.find(class_ = "a-size-base a-color-price").text
+        stock = int(re.findall(r'\d+\.?\d*', stock)[0])
+        url = item.find("a").get("href").split("/")
+        urlId = url[2]
+        if urlId =="dp":
+            asin = url[3]
+        else:
+            continue
+            
+        # extract numerical values using regex
+        newUrl = "https://www.amazon.com/gp/product/ajax/ref=dp_aod_ALL_mbc?asin=" + asin + "&m=&qid=&smid=&sourcecustomerorglistid=&sourcecustomerorglistitemid=&sr=&pc=dp&experienceId=aodAjaxMain"
+        response = requests.get(newUrl, headers=headers)
+        
+        parse_only = SoupStrainer(class_="a-offscreen")
+        soup2 = BeautifulSoup(response.content, "html.parser", parse_only=parse_only)
+        try:
+            buyBox = soup2.find(class_="a-offscreen").text
+        except:
+            continue
+        itemInfo = [title, price, buyBox, stock, asin]
+        # itemsList.append(itemInfo)
+        print("\n\n\n")
+        print("title: ", title)
+        print("price: ", price)
+        print("buybox: ", buyBox)
+        print("stock: ", stock)
+        print("asin: ", asin)
+        
+    if itemsList == []:
+        break
+        
+    currentPage +=1
+        
+        
+        
+# #sort itemsList by stock
+# itemsList.sort(key=lambda x: x[2], reverse= True)
 
+# print(itemsList)
 
-url = "https://www.amazon.com/s?i=merchant-items&me=" + "A1UYWNXLVQQ3CL"
-
-response = requests.request("GET", url, headers=headers)
-
-# Parse the HTML content of the page
-soup = BeautifulSoup(response.content, "html.parser")
-element = soup.findAll('div', {'data-component-type': 's-search-result'})
-for i in element:
-    n = i.find(class_="a-size-medium a-color-base a-text-normal")
-    s = i.find(class_ = "a-offscreen")
-    p = i.find(class_ = "a-size-base a-color-price")
-    print(n.text, s.text, p.text)
-
+        
