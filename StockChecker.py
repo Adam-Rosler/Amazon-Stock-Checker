@@ -136,12 +136,23 @@ def getBuyBoxPrice(asin):
         return None
 
 
+    
 # parses asin content given a asin elements list
 
 
 def parseAsin(elements):
+    #length of the elements
+    itemsLength = len(elements)
+    completed = 1
+    #holds all the items information
+    itemsList = []
+
     # loop through all the elements
     for element in elements:
+        #print the status
+        print("completed: ", str(completed) + "/" + str(itemsLength))
+        #add to completed
+        completed +=1
         # get the title
         title = getTitle(element)
         # get the price
@@ -164,7 +175,6 @@ def parseAsin(elements):
         #check if the sellers price is within 5% of the buybox price
         upperBound = buyBox * 1.05
         if (price > upperBound):
-            print(price, buyBox)
             continue
             
             
@@ -172,21 +182,27 @@ def parseAsin(elements):
 
         # create an item
         itemInfo = [title, price, buyBox, stock, asin]
-        # itemsList.append(itemInfo)
-        print("\n\n\n")
-        print("title: ", title)
-        print("price: ", price)
-        print("buybox: ", buyBox)
-        print("stock: ", stock)
-        print("asin: ", asin)
+        itemsList.append(itemInfo)
 
+    return itemsList
 
 storeId = input("Please enter the storeID: ")
 asinElement = scrapeAsinsFromStore(storeId)
-parseAsin(asinElement)
-
-
+itemsList = parseAsin(asinElement)
 # #sort itemsList by stock
-# itemsList.sort(key=lambda x: x[2], reverse= True)
+itemsList.sort(key=lambda x: x[2], reverse= True)
 
-# print(itemsList)
+for item in itemsList:
+    title = item[0]
+    price = item[1]
+    buyBox = item[2]
+    stock = item[3]
+    asin = item[4]
+
+    print("\n\n\n")
+    print("title: ", title)
+    print("price: ", price)
+    print("buybox: ", buyBox)
+    print("stock: ", stock)
+    print("asin: ", asin)
+
