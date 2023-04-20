@@ -76,6 +76,11 @@ def getTitle(element):
 
 def getPrice(element):
     price = element.find(class_="a-offscreen").text
+    #remove the "$"
+    price = price.replace("$", "")
+    #convert to float
+    price = float(price)
+    
     return price
 
 
@@ -121,6 +126,10 @@ def getBuyBoxPrice(asin):
     try:
         # grab the buybox price
         buyBox = soup2.find(class_="a-offscreen").text
+        #remove the "$"
+        buyBox = buyBox.replace("$", "")
+        #convert to float
+        buyBox = float(buyBox)
         return buyBox
     except:
         # if no buybox is found, it returns None
@@ -151,6 +160,15 @@ def parseAsin(elements):
         buyBox = getBuyBoxPrice(asin)
         if buyBox == None:
             continue
+        
+        #check if the sellers price is within 5% of the buybox price
+        upperBound = buyBox * 1.05
+        if (price > upperBound):
+            print(price, buyBox)
+            continue
+            
+            
+            
 
         # create an item
         itemInfo = [title, price, buyBox, stock, asin]
